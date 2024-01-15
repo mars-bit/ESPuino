@@ -244,7 +244,7 @@ void loop() {
 	}
 
 	AudioPlayer_Cyclic();
-	Battery_Cyclic();
+	//Battery_Cyclic();
 	//Port_Cyclic(); // called by button (controlled via hw-timer)
 	Button_Cyclic();
 	System_Cyclic();
@@ -255,7 +255,7 @@ void loop() {
 		recoverLastRfidPlayedFromNvs();
 	#endif
 
-	IrReceiver_Cyclic();
+	//IrReceiver_Cyclic();
 	vTaskDelay(portTICK_RATE_MS * 5u);
 
     #ifdef HALLEFFECT_SENSOR_ENABLE

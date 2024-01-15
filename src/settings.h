@@ -25,7 +25,7 @@
 	more to come...
 	*/
 	#ifndef HAL             // Will be set by platformio.ini. If using Arduino-IDE you have to set HAL according your needs!
-		#define HAL 1       // HAL 1 = LoLin32, 2 = ESP32-A1S-AudioKit, 3 = Lolin D32, 4 = Lolin D32 pro; ... 99 = custom
+		#define HAL 99       // HAL 1 = LoLin32, 2 = ESP32-A1S-AudioKit, 3 = Lolin D32, 4 = Lolin D32 pro; ... 99 = custom
 	#endif
 
 
@@ -35,27 +35,27 @@
 	#define MDNS_ENABLE                     // When enabled, you don't have to handle with ESPuino's IP-address. If hostname is set to "ESPuino", you can reach it via ESPuino.local
 	//#define MQTT_ENABLE                   // Make sure to configure mqtt-server and (optionally) username+pwd
 	#define FTP_ENABLE                      // Enables FTP-server; DON'T FORGET TO ACTIVATE AFTER BOOT BY PRESSING PAUSE + NEXT-BUTTONS (IN PARALLEL)!
-	#define NEOPIXEL_ENABLE                 // Don't forget configuration of NUM_LEDS if enabled
+	//#define NEOPIXEL_ENABLE               // Don't forget configuration of NUM_LEDS if enabled
 	//#define NEOPIXEL_REVERSE_ROTATION     // Some Neopixels are adressed/soldered counter-clockwise. This can be configured here.
 	#define LANGUAGE DE                     // DE = deutsch; EN = english
 	//#define STATIC_IP_ENABLE              // Enables static IP-configuration (change static ip-section accordingly)
-	#define HEADPHONE_ADJUST_ENABLE         // Used to adjust (lower) volume for optional headphone-pcb (refer maxVolumeSpeaker / maxVolumeHeadphone) and to enable stereo (if PLAY_MONO_SPEAKER is set)
+	//#define HEADPHONE_ADJUST_ENABLE       // Used to adjust (lower) volume for optional headphone-pcb (refer maxVolumeSpeaker / maxVolumeHeadphone) and to enable stereo (if PLAY_MONO_SPEAKER is set)
 	//#define PLAY_MONO_SPEAKER             // If only one speaker is used enabling mono should make sense. Please note: headphones is always stereo (if HEADPHONE_ADJUST_ENABLE is active)
 	#define SHUTDOWN_IF_SD_BOOT_FAILS       // Will put ESP to deepsleep if boot fails due to SD. Really recommend this if there's in battery-mode no other way to restart ESP! Interval adjustable via deepsleepTimeAfterBootFails.
-	#define MEASURE_BATTERY_VOLTAGE         // Enables battery-measurement via GPIO (ADC) and voltage-divider
+	//#define MEASURE_BATTERY_VOLTAGE       // Enables battery-measurement via GPIO (ADC) and voltage-divider
 	//#define MEASURE_BATTERY_MAX17055      // Enables battery-measurement via external fuel gauge (MAX17055)
 	//#define SHUTDOWN_ON_BAT_CRITICAL      // Whether to turn off on critical battery-level (only used if MEASURE_BATTERY_XXX is active)
 	//#define PLAY_LAST_RFID_AFTER_REBOOT   // When restarting ESPuino, the last RFID that was active before, is recalled and played
-	//#define USE_LAST_VOLUME_AFTER_REBOOT  // Remembers the volume used at last shutdown after reboot
-	#define USEROTARY_ENABLE                // If rotary-encoder is used (don't forget to review WAKEUP_BUTTON if you disable this feature!)
-	#define BLUETOOTH_ENABLE                // If enabled and bluetooth-mode is active, you can stream to your ESPuino via bluetooth (a2dp-sink).
+	#define USE_LAST_VOLUME_AFTER_REBOOT    // Remembers the volume used at last shutdown after reboot
+	//#define USEROTARY_ENABLE              // If rotary-encoder is used (don't forget to review WAKEUP_BUTTON if you disable this feature!)
+	//#define BLUETOOTH_ENABLE              // If enabled and bluetooth-mode is active, you can stream to your ESPuino via bluetooth (a2dp-sink).
 	//#define IR_CONTROL_ENABLE             // Enables remote control (https://forum.espuino.de/t/neues-feature-fernsteuerung-per-infrarot-fernbedienung/265)
 	#define CACHED_PLAYLIST_ENABLE          // Enables playlist-caching (infos: https://forum.espuino.de/t/neues-feature-cached-playlist/515)
-	//#define PAUSE_WHEN_RFID_REMOVED       // Playback starts when card is applied and pauses automatically, when card is removed (https://forum.espuino.de/t/neues-feature-pausieren-wenn-rfid-karte-entfernt-wurde/541)
+	#define PAUSE_WHEN_RFID_REMOVED         // Playback starts when card is applied and pauses automatically, when card is removed (https://forum.espuino.de/t/neues-feature-pausieren-wenn-rfid-karte-entfernt-wurde/541)
 	//#define PAUSE_ON_MIN_VOLUME           // When playback is active and volume is changed to zero, playback is paused automatically. Playback is continued if volume reaches 1. (https://forum.espuino.de/t/neues-feature-pausieren-wenn-rfid-karte-entfernt-wurde/541)
 	//#define DONT_ACCEPT_SAME_RFID_TWICE   // RFID-reader doesn't accept the same RFID-tag twice in a row (unless it's a modification-card or RFID-tag is unknown in NVS). Flag will be ignored silently if PAUSE_WHEN_RFID_REMOVED is active. (https://forum.espuino.de/t/neues-feature-dont-accept-same-rfid-twice/1247)
-	//#define SAVE_PLAYPOS_BEFORE_SHUTDOWN  // When playback is active and mode audiobook was selected, last play-position is saved automatically when shutdown is initiated
-	//#define SAVE_PLAYPOS_WHEN_RFID_CHANGE // When playback is active and mode audiobook was selected, last play-position is saved automatically for old playlist when new RFID-tag is applied
+	#define SAVE_PLAYPOS_BEFORE_SHUTDOWN    // When playback is active and mode audiobook was selected, last play-position is saved automatically when shutdown is initiated
+	#define SAVE_PLAYPOS_WHEN_RFID_CHANGE   // When playback is active and mode audiobook was selected, last play-position is saved automatically for old playlist when new RFID-tag is applied
 	//#define HALLEFFECT_SENSOR_ENABLE      // Support for hallsensor. For fine-tuning please adjust HallEffectSensor.h Please note: only user-support provided (https://forum.espuino.de/t/magnetische-hockey-tags/1449/35)
 
 	//################## set PAUSE_WHEN_RFID_REMOVED behaviour #############################
@@ -64,7 +64,7 @@
 	#endif
 
 	//################## select SD card mode #############################
-	#define SD_MMC_1BIT_MODE              // run SD card in SD-MMC 1Bit mode (using GPIOs 15 + 14 + 2 is mandatory!)
+	//#define SD_MMC_1BIT_MODE              // run SD card in SD-MMC 1Bit mode (using GPIOs 15 + 14 + 2 is mandatory!)
 	//#define SINGLE_SPI_ENABLE             // If only one SPI-instance should be used instead of two (not yet working!)
 
 
@@ -72,6 +72,7 @@
 	#define RFID_READER_TYPE_MFRC522_SPI    // use MFRC522 via SPI
 	//#define RFID_READER_TYPE_MFRC522_I2C  // use MFRC522 via I2C
 	//#define RFID_READER_TYPE_PN5180       // use PN5180 via SPI
+	//#define RFID_READER_TYPE_PN532        // use PN532 via SPI
 
 	#ifdef RFID_READER_TYPE_MFRC522_I2C
 		#define MFRC522_ADDR 0x28           // default I2C-address of MFRC522
@@ -121,17 +122,17 @@
 	// *****BUTTON*****        *****ACTION*****
 	#define BUTTON_0_SHORT    CMD_NEXTTRACK
 	#define BUTTON_1_SHORT    CMD_PREVTRACK
-	#define BUTTON_2_SHORT    CMD_PLAYPAUSE
-	#define BUTTON_3_SHORT    CMD_MEASUREBATTERY
-	#define BUTTON_4_SHORT    CMD_SEEK_BACKWARDS
-	#define BUTTON_5_SHORT    CMD_SEEK_FORWARDS
+	#define BUTTON_2_SHORT    CMD_VOLUMEUP
+	#define BUTTON_3_SHORT    CMD_VOLUMEDOWN
+	#define BUTTON_4_SHORT    CMD_NOTHING
+	#define BUTTON_5_SHORT    CMD_NOTHING
 
 	#define BUTTON_0_LONG     CMD_LASTTRACK
 	#define BUTTON_1_LONG     CMD_FIRSTTRACK
 	#define BUTTON_2_LONG     CMD_PLAYPAUSE
 	#define BUTTON_3_LONG     CMD_SLEEPMODE
-	#define BUTTON_4_LONG     CMD_VOLUMEUP
-	#define BUTTON_5_LONG     CMD_VOLUMEDOWN
+	#define BUTTON_4_LONG     CMD_NOTHING
+	#define BUTTON_5_LONG     CMD_NOTHING
 
 	#define BUTTON_MULTI_01   CMD_NOTHING   //CMD_TOGGLE_WIFI_STATUS (disabled now to prevent children from unwanted WiFi-disable)
 	#define BUTTON_MULTI_02   CMD_ENABLE_FTP_SERVER
@@ -170,7 +171,7 @@
 	#define INCLUDE_ROTARY_IN_CONTROLS_LOCK			// If set the rotary encoder is locked if controls are locked
 
 	// RFID-RC522
-	#define RFID_SCAN_INTERVAL 100                      // Interval-time in ms (how often is RFID read?)
+	#define RFID_SCAN_INTERVAL 500                      // Interval-time in ms (how often is RFID read?)
 
 	// Automatic restart
 	#ifdef SHUTDOWN_IF_SD_BOOT_FAILS
@@ -182,11 +183,11 @@
 	// Default user/password is esp32/esp32 but can be changed via webgui
 
 	// ESPuino will create a WiFi if joing existing WiFi was not possible. Name and password can be configured here.
-	constexpr const char accessPointNetworkSSID[] PROGMEM = "ESPuino";     // Access-point's SSID
+	constexpr const char accessPointNetworkSSID[] PROGMEM = "Yoshibox";     // Access-point's SSID
 	constexpr const char accessPointNetworkPassword[] PROGMEM = "";        // Access-point's Password, at least 8 characters! Set to an empty string to spawn an open WiFi.
 
 	// Bluetooth
-	constexpr const char nameBluetoothSinkDevice[] PROGMEM = "ESPuino";        // Name of your ESPuino as Bluetooth-device
+	constexpr const char nameBluetoothSinkDevice[] PROGMEM = "Yoshibox";        // Name of your ESPuino as Bluetooth-device
 	constexpr const char nameBluetoothSourceDevice[] PROGMEM = "My POGS Wireless Headphone"; // Name of Bluetooth-device to connect to (BT-Headset name) (https://forum.espuino.de/t/neues-feature-bluetooth-kopfhoerer/1293/)
 
 	// Where to store the backup-file for NVS-records
@@ -249,7 +250,7 @@
 	#ifdef MQTT_ENABLE
 		constexpr uint16_t mqttRetryInterval = 60;                // Try to reconnect to MQTT-server every (n) seconds if connection is broken
 		constexpr uint8_t mqttMaxRetriesPerInterval = 1;          // Number of retries per time-interval (mqttRetryInterval). mqttRetryInterval 60 / mqttMaxRetriesPerInterval 1 => once every 60s
-		#define DEVICE_HOSTNAME "ESP32-ESPuino"         // Name that is used for MQTT
+		#define DEVICE_HOSTNAME "ESP32-Yoshibox"         // Name that is used for MQTT
 		constexpr const char topicSleepCmnd[] PROGMEM = "Cmnd/ESPuino/Sleep";
 		constexpr const char topicSleepState[] PROGMEM = "State/ESPuino/Sleep";
 		constexpr const char topicRfidCmnd[] PROGMEM = "Cmnd/ESPuino/Rfid";

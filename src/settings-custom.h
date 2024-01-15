@@ -20,20 +20,20 @@
         //  (MISO)     2  D0
     #else
         // uSD-card-reader (via SPI)
-        #define SPISD_CS                    15          // GPIO for chip select (SD)
+        #define SPISD_CS                    22          // GPIO for chip select (SD)
         #ifndef SINGLE_SPI_ENABLE
-            #define SPISD_MOSI              13          // GPIO for master out slave in (SD) => not necessary for single-SPI
-            #define SPISD_MISO              16          // GPIO for master in slave ou (SD) => not necessary for single-SPI
-            #define SPISD_SCK               14          // GPIO for clock-signal (SD) => not necessary for single-SPI
+            #define SPISD_MOSI              23          // GPIO for master out slave in (SD) => not necessary for single-SPI
+            #define SPISD_MISO              19          // GPIO for master in slave ou (SD) => not necessary for single-SPI
+            #define SPISD_SCK               18          // GPIO for clock-signal (SD) => not necessary for single-SPI
         #endif
     #endif
 
     // RFID (via SPI)
-    #define RST_PIN                         99          // Not necessary but has to be set anyway; so let's use a dummy-number
+    #define RST_PIN                         UINT8_MAX   // Not necessary but has to be set anyway; so let's use a dummy-number
     #define RFID_CS                         21          // GPIO for chip select (RFID)
-    #define RFID_MOSI                       23          // GPIO for master out slave in (RFID)
-    #define RFID_MISO                       19          // GPIO for master in slave out (RFID)
-    #define RFID_SCK                        18          // GPIO for clock-signal (RFID)
+    #define RFID_MOSI                       26          // GPIO for master out slave in (RFID)
+    #define RFID_MISO                       14          // GPIO for master in slave out (RFID)
+    #define RFID_SCK                        25          // GPIO for clock-signal (RFID)
 
     #ifdef RFID_READER_TYPE_PN5180
         #define RFID_BUSY                   16          // PN5180 BUSY PIN
@@ -41,9 +41,9 @@
         #define RFID_IRQ                    39          // PN5180 IRQ PIN (only needed for low power card detection)
     #endif
     // I2S (DAC)
-    #define I2S_DOUT                        25          // Digital out (I2S)
-    #define I2S_BCLK                        27          // BCLK (I2S)
-    #define I2S_LRC                         26          // LRC (I2S)
+    #define I2S_DOUT                        17          // Digital out (I2S)
+    #define I2S_BCLK                        16          // BCLK (I2S)
+    #define I2S_LRC                         4          // LRC (I2S)
 
     // Rotary encoder
     #ifdef USEROTARY_ENABLE
@@ -57,10 +57,10 @@
     //#define GPIO_HP_EN                      113         // To enable amp for headphones (GPIO or port-channel)
 
     // Control-buttons (set to 99 to DISABLE; 0->39 for GPIO; 100->115 for port-expander)
-    #define NEXT_BUTTON                      4          // Button 0: GPIO to detect next
-    #define PREVIOUS_BUTTON                  2          // Button 1: GPIO to detect previous (Important: as of 19.11.2020 changed from 33 to 2; make sure to change in SD-MMC-mode)
-    #define PAUSEPLAY_BUTTON                 0          // Button 2: GPIO to detect pause/play
-    #define ROTARYENCODER_BUTTON            32          // (set to 99 to disable; 0->39 for GPIO; 100->115 for port-expander)
+    #define NEXT_BUTTON                     35          // Button 0: GPIO to detect next
+    #define PREVIOUS_BUTTON                 34          // Button 1: GPIO to detect previous (Important: as of 19.11.2020 changed from 33 to 2; make sure to change in SD-MMC-mode)
+    #define PAUSEPLAY_BUTTON                39          // Button 2: GPIO to detect pause/play
+    #define ROTARYENCODER_BUTTON            36          // (set to 99 to disable; 0->39 for GPIO; 100->115 for port-expander)
     #define BUTTON_4                        99          // Button 4: unnamed optional button
     #define BUTTON_5                        99          // Button 5: unnamed optional button
 
@@ -84,13 +84,13 @@
     #define WAKEUP_BUTTON                   ROTARYENCODER_BUTTON // Defines the button that is used to wake up ESPuino from deepsleep.
 
     // (optional) Power-control
-    #define POWER                           17          // GPIO used to drive transistor-circuit, that switches off peripheral devices while ESP32-deepsleep
+    #define POWER                           99          // GPIO used to drive transistor-circuit, that switches off peripheral devices while ESP32-deepsleep
     #ifdef POWER
         //#define INVERT_POWER                          // If enabled, use inverted logic for POWER circuit, that means peripherals are turned off by writing HIGH
     #endif
 
     // (optional) Neopixel
-    #define LED_PIN                         12          // GPIO for Neopixel-signaling
+    #define LED_PIN                         99          // GPIO for Neopixel-signaling
 
     // (optinal) Headphone-detection
     #ifdef HEADPHONE_ADJUST_ENABLE

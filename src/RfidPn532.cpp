@@ -9,36 +9,36 @@
 #include "AudioPlayer.h"
 #include "HallEffectSensor.h"
 
-#if defined RFID_READER_TYPE_MFRC522_SPI || defined RFID_READER_TYPE_MFRC522_I2C
-	#ifdef RFID_READER_TYPE_MFRC522_SPI
+#if defined RFID_READER_TYPE_PN532_SPI || defined RFID_READER_TYPE_PN532_I2C
+	#ifdef RFID_READER_TYPE_PN532_SPI
 		#include <MFRC522.h>
 	#endif
-	#if defined(RFID_READER_TYPE_MFRC522_I2C) || defined(PORT_EXPANDER_ENABLE)
+	#if defined(RFID_READER_TYPE_PN532_I2C) || defined(PORT_EXPANDER_ENABLE)
 		#include "Wire.h"
 	#endif
-	#ifdef RFID_READER_TYPE_MFRC522_I2C
+	#ifdef RFID_READER_TYPE_PN532_I2C
 		#include <MFRC522_I2C.h>
 	#endif
 
 	extern unsigned long Rfid_LastRfidCheckTimestamp;
 	static void Rfid_Task(void *parameter);
 
-	#ifdef RFID_READER_TYPE_MFRC522_I2C
+	#ifdef RFID_READER_TYPE_PN532_I2C
 		extern TwoWire i2cBusTwo;
 		static MFRC522_I2C mfrc522(MFRC522_ADDR, MFRC522_RST_PIN, &i2cBusTwo);
 	#endif
-	#ifdef RFID_READER_TYPE_MFRC522_SPI
+	#ifdef RFID_READER_TYPE_PN532_SPI
 		static MFRC522 mfrc522(RFID_CS, RST_PIN);
 	#endif
 
 	void Rfid_Init(void) {
-		#ifdef RFID_READER_TYPE_MFRC522_SPI
+		#ifdef RFID_READER_TYPE_PN532_SPI
 			SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI, RFID_CS);
 			SPI.setFrequency(1000000);
 		#endif
 
 		// Init RC522 Card-Reader
-		#if defined(RFID_READER_TYPE_MFRC522_I2C) || defined(RFID_READER_TYPE_MFRC522_SPI)
+		#if defined(RFID_READER_TYPE_PN532_I2C) || defined(RFID_READER_TYPE_PN532_SPI)
 			mfrc522.PCD_Init();
 			mfrc522.PCD_SetAntennaGain(rfidGain);
 			delay(50);
