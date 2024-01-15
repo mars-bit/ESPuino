@@ -109,6 +109,10 @@ bool testSPIRAM(void) {
 
 
 void setup() {
+	// Keep power
+	pinMode(2, OUTPUT);
+	digitalWrite(2, HIGH);
+
 	Log_Init();
 	Queues_Init();
 
@@ -193,7 +197,7 @@ void setup() {
 	Ftp_Init();
 	Mqtt_Init();
 	#ifndef PN5180_ENABLE_LPCD
-		#if defined (RFID_READER_TYPE_MFRC522_SPI) || defined (RFID_READER_TYPE_MFRC522_I2C) || defined(RFID_READER_TYPE_PN5180)
+		#if defined (RFID_READER_TYPE_MFRC522_SPI) || defined (RFID_READER_TYPE_MFRC522_I2C) || defined(RFID_READER_TYPE_PN5180) || defined (RFID_READER_TYPE_PN532_SPI)
 			Rfid_Init();
 		#endif
 	#endif
