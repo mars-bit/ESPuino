@@ -8,6 +8,7 @@
 #include <esp_task_wdt.h>
 #include "AudioPlayer.h"
 #include "HallEffectSensor.h"
+#include "Common.h"
 
 #if defined RFID_READER_TYPE_MFRC522_SPI || defined RFID_READER_TYPE_MFRC522_I2C
 	#ifdef RFID_READER_TYPE_MFRC522_SPI
@@ -33,14 +34,27 @@
 
 	void Rfid_Init(void) {
 		#ifdef RFID_READER_TYPE_MFRC522_SPI
+			#ifdef SINGLE_SPI_ENABLE
+				if(xSemaphoreTake(spiSemaphore, 100000)!=pdTRUE){
+					Log_Println((char *) FPSTR("Unable to connect RFID reader in single SPI mode!"), LOGLEVEL_ERROR);
+					while(1){
+						// halt program
+					}
+				}
+				digitalWrite(SPISD_CS, LOW);
+				digitalWrite(RFID_PWR, HIGH);
+			#endif
 			SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI, RFID_CS);
 			SPI.setFrequency(1000000);
 		#endif
 
 		// Init RC522 Card-Reader
 		#if defined(RFID_READER_TYPE_MFRC522_I2C) || defined(RFID_READER_TYPE_MFRC522_SPI)
-			mfrc522.PCD_Init();
+			mfrc522.PCD_Init(RFID_CS, RST_PIN);
 			mfrc522.PCD_SetAntennaGain(rfidGain);
+			#ifdef SINGLE_SPI_ENABLE
+				xSemaphoreGive(spiSemaphore);
+			#endif
 			delay(50);
 			Log_Println((char *) FPSTR(rfidScannerReady), LOGLEVEL_DEBUG);
 
@@ -55,6 +69,22 @@
 			);
 		#endif
 	}
+
+	bool RFID_reInit(TickType_t t=20){
+    #ifdef SINGLE_SPI_ENABLE
+        if(!takeSpiSemaphore(t)){
+            // semaphore blocked
+            return false;
+        }
+		digitalWrite(SPISD_CS, LOW);
+		digitalWrite(RFID_PWR, HIGH);
+        SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI, RFID_CS);
+        SPI.setFrequency(1000000);
+        mfrc522.PCD_Init(RFID_CS, RST_PIN);
+        mfrc522.PCD_SetAntennaGain(rfidGain);
+    #endif
+    return true;
+}
 
 	void Rfid_Task(void *parameter) {
 		uint8_t control = 0x00;
@@ -76,23 +106,20 @@
 				//snprintf(Log_Buffer, Log_BufferLength, "%u", uxTaskGetStackHighWaterMark(NULL));
 				//Log_Println(Log_Buffer, LOGLEVEL_DEBUG);
 
-				Rfid_LastRfidCheckTimestamp = millis();
-
 				// Re-initiate rfid reader in single SPI mode
-				#if defined(SINGLE_SPI_ENABLE) && defined(RFID_READER_TYPE_MFRC522_SPI)
-					SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI, RFID_CS);
-					SPI.setFrequency(1000000);
-					mfrc522.PCD_Init();
-					mfrc522.PCD_SetAntennaGain(rfidGain);
-				#endif
+				if(!RFID_reInit()) continue;
+
+				Rfid_LastRfidCheckTimestamp = millis();
 				
 				// Reset the loop if no new card is present on the sensor/reader. This saves the entire process when idle.
 				 if (!mfrc522.PICC_IsNewCardPresent()) {
+					giveSpiSemaphore();
 					continue;
 				}
 
 				// Select one of the cards
 				if (!mfrc522.PICC_ReadCardSerial()) {
+					giveSpiSemaphore();					
 					continue;
 				}
 				#ifdef PAUSE_WHEN_RFID_REMOVED
@@ -103,6 +130,8 @@
 					mfrc522.PICC_HaltA();
 					mfrc522.PCD_StopCrypto1();
 				#endif
+
+				giveSpiSemaphore();
 
 				memcpy(cardId, mfrc522.uid.uidByte, cardIdSize);
     			#ifdef HALLEFFECT_SENSOR_ENABLE
@@ -154,6 +183,7 @@
 							vTaskDelay(portTICK_RATE_MS * 20);
 						}
 						control=0;
+						if(!RFID_reInit()) continue;
 						for (uint8_t i=0u; i<3; i++) {
 							if (!mfrc522.PICC_IsNewCardPresent()) {
 								if (mfrc522.PICC_ReadCardSerial()) {
@@ -167,6 +197,8 @@
 							control += 0x4;
 						}
 
+						giveSpiSemaphore();
+
 						if (control == 13 || control == 14) {
 						  //card is still there
 						} else {
@@ -179,8 +211,11 @@
 						AudioPlayer_TrackControlToQueueSender(PAUSEPLAY);
 						Log_Println((char *) FPSTR(rfidTagReapplied), LOGLEVEL_NOTICE);
 					}
+
+					if(!RFID_reInit()) continue;
 					mfrc522.PICC_HaltA();
 					mfrc522.PCD_StopCrypto1();
+					giveSpiSemaphore();
 					cardAppliedCurrentRun = false;
 				#endif
 			}

@@ -16,6 +16,7 @@ extern char gCurrentRfidTagId[cardIdStringSize];
 #endif
 
 void Rfid_Init(void);
+bool Rfid_reInit(TickType_t t); // for single SPI mode
 void Rfid_Cyclic(void);
 void Rfid_Exit(void);
 void Rfid_WakeupCheck(void);

@@ -8,6 +8,7 @@
 
 extern fs::FS gFSystem;
 
+bool SdCard_reInit(TickType_t t=20); // for single SPI mode
 void SdCard_Init(void);
 void SdCard_Exit(void);
 sdcard_type_t SdCard_GetType(void);

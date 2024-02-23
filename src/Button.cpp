@@ -285,13 +285,13 @@ void Button_DoButtonActions(void) {
 						Cmd_Action(Cmd_Short);
 					} else {
 						// if not volume buttons than start action after button release
-						if (Cmd_Long != CMD_VOLUMEUP && Cmd_Long != CMD_VOLUMEDOWN) {
+						if (Cmd_Long != CMD_VOLUMEUP && Cmd_Long != CMD_VOLUMEDOWN && Cmd_Long != CMD_NEXTTRACK && Cmd_Long != CMD_PREVTRACK) {
 							Cmd_Action(Cmd_Long);
 						}
 					}
 
 					gButtons[i].isPressed = false;
-				} else if (Cmd_Long == CMD_VOLUMEUP || Cmd_Long == CMD_VOLUMEDOWN) {
+				} else if (Cmd_Long == CMD_VOLUMEUP || Cmd_Long == CMD_VOLUMEDOWN || Cmd_Long == CMD_NEXTTRACK || Cmd_Long == CMD_PREVTRACK) {
 					unsigned long currentTimestamp = millis();
 
 					// only start action if intervalToLongPress has been reached

@@ -111,6 +111,7 @@ void AudioPlayer_Init(void) {
 
 	// Don't start audio-task in BT-speaker mode!
 	if ((System_GetOperationMode() == OPMODE_NORMAL) || (System_GetOperationMode() == OPMODE_BLUETOOTH_SOURCE)) {
+		Log_Println((char *) FPSTR("Starting audio task..."), LOGLEVEL_ERROR);
 		xTaskCreatePinnedToCore(
 			AudioPlayer_Task,      /* Function to implement the task */
 			"mp3play",             /* Name of the task */
@@ -320,6 +321,7 @@ void AudioPlayer_Task(void *parameter) {
 	static uint8_t trackCommand = NO_ACTION;
 	bool audioReturnCode;
 
+	Log_Println((char *) FPSTR("Start audio loop."), LOGLEVEL_ERROR);
 	for (;;) {
 		/*
 		if (cnt123++ % 100 == 0) {
@@ -626,6 +628,7 @@ void AudioPlayer_Task(void *parameter) {
 				gPlayProperties.playlistFinished = false;
 			} else if (gPlayProperties.playMode != WEBSTREAM && !gPlayProperties.isWebstream) {
 				// Files from SD
+				SdCard_reInit(20);
 				if (!gFSystem.exists(*(gPlayProperties.playlist + gPlayProperties.currentTrackNumber))) { // Check first if file/folder exists
 					snprintf(Log_Buffer, Log_BufferLength, "%s: %s", (char *) FPSTR(dirOrFileDoesNotExist), *(gPlayProperties.playlist + gPlayProperties.currentTrackNumber));
 					Log_Println(Log_Buffer, LOGLEVEL_ERROR);
@@ -635,6 +638,7 @@ void AudioPlayer_Task(void *parameter) {
 					audioReturnCode = audio->connecttoFS(gFSystem, *(gPlayProperties.playlist + gPlayProperties.currentTrackNumber));
 					// consider track as finished, when audio lib call was not successful
 				}
+				giveSpiSemaphore();
 			}
 
 			if (!audioReturnCode) {
@@ -743,15 +747,25 @@ void AudioPlayer_Task(void *parameter) {
 		// Calculate relative position in file (for neopixel) for SD-card-mode
 		if (!gPlayProperties.playlistFinished && !gPlayProperties.isWebstream) {
 			if (millis() % 20 == 0) {   // Keep it simple
+				SdCard_reInit();
 				if (!gPlayProperties.pausePlay && (audio->getFileSize() > 0)) {   // To progress necessary when paused
 					gPlayProperties.currentRelPos = ((double)(audio->getFilePos() - audio->inBufferFilled()) / (double)audio->getFileSize()) * 100;
 				}
+				giveSpiSemaphore();
 			}
 		} else {
 			gPlayProperties.currentRelPos = 0;
 		}
-
+		#ifdef SINGLE_SPI_ENABLE
+			Log_Println((char *) FPSTR("Looping audio..."), LOGLEVEL_DEBUG);
+			takeSpiSemaphore();
+		#endif
 		audio->loop();
+		#ifdef SINGLE_SPI_ENABLE
+			giveSpiSemaphore();
+			Log_Println((char *) FPSTR("SPI semaphore returned."), LOGLEVEL_DEBUG);
+		#endif
+		
 		if (gPlayProperties.playlistFinished || gPlayProperties.pausePlay) {
 			if (!gPlayProperties.currentSpeechActive) {
 				vTaskDelay(portTICK_PERIOD_MS * 10); // Waste some time if playlist is not active
@@ -867,6 +881,7 @@ void AudioPlayer_TrackQueueDispatcher(const char *_itemToPlay, const uint32_t _l
 	char **musicFiles;
 
 	if (_playMode != WEBSTREAM) {
+		SdCard_reInit();
 		if (_playMode == RANDOM_SUBDIRECTORY_OF_DIRECTORY) {
 			filename = SdCard_pickRandomSubdirectory(filename);     // *filename (input): target-directory  //   *filename (output): random subdirectory
 			if (filename == NULL) {  // If error occured while extracting random subdirectory
@@ -877,6 +892,7 @@ void AudioPlayer_TrackQueueDispatcher(const char *_itemToPlay, const uint32_t _l
 		} else {
 			musicFiles = SdCard_ReturnPlaylist(filename, _playMode);
 		}
+		giveSpiSemaphore();
 	} else {
 		musicFiles = AudioPlayer_ReturnPlaylistFromWebstream(filename);
 	}

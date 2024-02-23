@@ -40,7 +40,7 @@
 	#define LANGUAGE DE                     // DE = deutsch; EN = english
 	//#define STATIC_IP_ENABLE              // Enables static IP-configuration (change static ip-section accordingly)
 	//#define HEADPHONE_ADJUST_ENABLE       // Used to adjust (lower) volume for optional headphone-pcb (refer maxVolumeSpeaker / maxVolumeHeadphone) and to enable stereo (if PLAY_MONO_SPEAKER is set)
-	//#define PLAY_MONO_SPEAKER             // If only one speaker is used enabling mono should make sense. Please note: headphones is always stereo (if HEADPHONE_ADJUST_ENABLE is active)
+	#define PLAY_MONO_SPEAKER             // If only one speaker is used enabling mono should make sense. Please note: headphones is always stereo (if HEADPHONE_ADJUST_ENABLE is active)
 	#define SHUTDOWN_IF_SD_BOOT_FAILS       // Will put ESP to deepsleep if boot fails due to SD. Really recommend this if there's in battery-mode no other way to restart ESP! Interval adjustable via deepsleepTimeAfterBootFails.
 	//#define MEASURE_BATTERY_VOLTAGE       // Enables battery-measurement via GPIO (ADC) and voltage-divider
 	//#define MEASURE_BATTERY_MAX17055      // Enables battery-measurement via external fuel gauge (MAX17055)
@@ -122,24 +122,24 @@
 	// *****BUTTON*****        *****ACTION*****
 	#define BUTTON_0_SHORT    CMD_NEXTTRACK
 	#define BUTTON_1_SHORT    CMD_PREVTRACK
-	#define BUTTON_2_SHORT    CMD_VOLUMEUP
-	#define BUTTON_3_SHORT    CMD_VOLUMEDOWN
-	#define BUTTON_4_SHORT    CMD_NOTHING
-	#define BUTTON_5_SHORT    CMD_NOTHING
+	#define BUTTON_2_SHORT    CMD_NOTHING
+	#define BUTTON_3_SHORT    CMD_NOTHING
+	#define BUTTON_4_SHORT    CMD_VOLUMEUP
+	#define BUTTON_5_SHORT    CMD_VOLUMEDOWN
 
 	#define BUTTON_0_LONG     CMD_LASTTRACK
 	#define BUTTON_1_LONG     CMD_FIRSTTRACK
-	#define BUTTON_2_LONG     CMD_PLAYPAUSE
-	#define BUTTON_3_LONG     CMD_SLEEPMODE
+	#define BUTTON_2_LONG     CMD_NOTHING
+	#define BUTTON_3_LONG     CMD_NOTHING
 	#define BUTTON_4_LONG     CMD_NOTHING
 	#define BUTTON_5_LONG     CMD_NOTHING
 
-	#define BUTTON_MULTI_01   CMD_NOTHING   //CMD_TOGGLE_WIFI_STATUS (disabled now to prevent children from unwanted WiFi-disable)
-	#define BUTTON_MULTI_02   CMD_ENABLE_FTP_SERVER
+	#define BUTTON_MULTI_01   CMD_NOTHING   
+	#define BUTTON_MULTI_02   CMD_NOTHING
 	#define BUTTON_MULTI_03   CMD_NOTHING
 	#define BUTTON_MULTI_04   CMD_NOTHING
 	#define BUTTON_MULTI_05   CMD_NOTHING
-	#define BUTTON_MULTI_12   CMD_TELL_IP_ADDRESS
+	#define BUTTON_MULTI_12   CMD_NOTHING
 	#define BUTTON_MULTI_13   CMD_NOTHING
 	#define BUTTON_MULTI_14   CMD_NOTHING
 	#define BUTTON_MULTI_15   CMD_NOTHING
@@ -148,7 +148,7 @@
 	#define BUTTON_MULTI_25   CMD_NOTHING
 	#define BUTTON_MULTI_34   CMD_NOTHING
 	#define BUTTON_MULTI_35   CMD_NOTHING
-	#define BUTTON_MULTI_45   CMD_NOTHING
+	#define BUTTON_MULTI_45   CMD_TELL_IP_ADDRESS
 
 	//#################### Various settings ##############################
 
@@ -165,7 +165,7 @@
 
 	// Buttons (better leave unchanged if in doubts :-))
 	constexpr uint8_t buttonDebounceInterval = 50;                // Interval in ms to software-debounce buttons
-	constexpr uint16_t intervalToLongPress = 700;                 // Interval in ms to distinguish between short and long press of buttons
+	constexpr uint16_t intervalToLongPress = 3000;                 // Interval in ms to distinguish between short and long press of buttons
 
 	//#define CONTROLS_LOCKED_BY_DEFAULT			// If set the controls are locked at boot
 	#define INCLUDE_ROTARY_IN_CONTROLS_LOCK			// If set the rotary encoder is locked if controls are locked

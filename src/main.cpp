@@ -107,21 +107,45 @@ bool testSPIRAM(void) {
 	}
 #endif
 
+#ifdef SINGLE_SPI_ENABLE
+	SemaphoreHandle_t spiSemaphore = NULL;
+#endif
 
 void setup() {
 	// Keep power
-	pinMode(2, OUTPUT);
-	digitalWrite(2, HIGH);
+	pinMode(POWER_HOLD_PIN, OUTPUT);
+	digitalWrite(POWER_HOLD_PIN, HIGH);
 
 	Log_Init();
+
+	#ifdef SINGLE_SPI_ENABLE
+		spiSemaphore = xSemaphoreCreateMutex();
+		assert(spiSemaphore);
+		if(spiSemaphore != NULL){
+			Log_Println((char *) FPSTR("SPI semaphore ready!"), LOGLEVEL_DEBUG);
+			xSemaphoreGive(spiSemaphore);
+		} else {
+			Log_Println((char *) FPSTR("SPI semaphore could not be created!"), LOGLEVEL_ERROR);
+			delay(10000);
+		}
+		pinMode(SPISD_CS, OUTPUT);
+		pinMode(RFID_CS, OUTPUT);
+		pinMode(RFID_PWR, OUTPUT);
+		analogWrite(SPISD_CS, LOW);
+		analogWrite(RFID_CS, LOW);
+		analogWrite(RFID_PWR, LOW);
+	#endif
+
 	Queues_Init();
 
 	// Make sure all wakeups can be enabled *before* initializing RFID, which can enter sleep immediately
+	Log_Println((char *) FPSTR("Initializing buttons..."), LOGLEVEL_DEBUG);
 	Button_Init();  // To preseed internal button-storage with values
 	#ifdef PN5180_ENABLE_LPCD
 		Rfid_Init();
 	#endif
 
+	Log_Println((char *) FPSTR("Initializing system..."), LOGLEVEL_DEBUG);
 	System_Init();
 
 	// Init 2nd i2c-bus if RC522 is used with i2c or if port-expander is enabled
@@ -136,22 +160,28 @@ void setup() {
     #endif
 
 	// Needs i2c first if port-expander is used
+	Log_Println((char *) FPSTR("Initializing ports..."), LOGLEVEL_DEBUG);
 	Port_Init();
 
 	// If port-expander is used, port_init has to be called first, as power can be (possibly) done by port-expander
+	Log_Println((char *) FPSTR("Initializing power..."), LOGLEVEL_DEBUG);
 	Power_Init();
 
+	Log_Println((char *) FPSTR("Initializing battery..."), LOGLEVEL_DEBUG);
 	Battery_Init();
 
 	// Init audio before power on to avoid speaker noise
+	Log_Println((char *) FPSTR("Initializing audio..."), LOGLEVEL_DEBUG);
 	AudioPlayer_Init();
 
 	// All checks that could send us to sleep are done, power up fully
+	Log_Println((char *) FPSTR("Powering on peripherals..."), LOGLEVEL_DEBUG);
 	Power_PeripheralOn();
 
 	memset(&gPlayProperties, 0, sizeof(gPlayProperties));
 	gPlayProperties.playlistFinished = true;
 
+	Log_Println((char *) FPSTR("Initializing leds..."), LOGLEVEL_DEBUG);
 	Led_Init();
 
 	// Only used for ESP32-A1S-Audiokit
@@ -170,6 +200,7 @@ void setup() {
 	#endif
 
 	// Needs power first
+	Log_Println((char *) FPSTR("Initializing SD card..."), LOGLEVEL_DEBUG);
 	SdCard_Init();
 
 	// welcome message

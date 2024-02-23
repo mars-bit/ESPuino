@@ -1,10 +1,16 @@
 #pragma once
+#include "settings.h"
+#include "Log.h"
 
 // FilePathLength
 #define MAX_FILEPATH_LENTGH 256
 
 constexpr char stringDelimiter[] = "#";      // Character used to encapsulate data in linear NVS-strings (don't change)
 constexpr char stringOuterDelimiter[] = "^"; // Character used to encapsulate encapsulated data along with RFID-ID in backup-file
+
+/* #ifdef SINGLE_SPI_ENABLE
+	extern SemaphoreHandle_t spiSemaphore;
+#endif */
 
 inline bool isNumber(const char *str)
 {
@@ -146,4 +152,25 @@ inline void freeMultiCharArray(char **arr, const uint32_t cnt) {
 		free(*(arr + i));
 	}
 	*arr = NULL;
+}
+
+inline bool takeSpiSemaphore(TickType_t t=20){
+    #ifdef SINGLE_SPI_ENABLE
+		if(spiSemaphore==NULL){
+			Log_Println((char *) FPSTR("SPI semaphore is NULL"), LOGLEVEL_DEBUG);
+			return false;
+		}
+        return (xSemaphoreTake(spiSemaphore, t)==pdTRUE)? true:false;
+    #else
+        return true;
+    #endif
+}
+
+inline void giveSpiSemaphore(){
+    #ifdef SINGLE_SPI_ENABLE
+		analogWrite(SPISD_CS, LOW);
+		analogWrite(RFID_CS, LOW);
+		analogWrite(RFID_PWR, LOW);
+        xSemaphoreGive(spiSemaphore);
+    #endif
 }

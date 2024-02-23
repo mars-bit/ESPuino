@@ -224,8 +224,10 @@ void System_DeepSleepManager(void) {
 		#ifdef PORT_EXPANDER_ENABLE
 			Port_Exit();
 		#endif
-		Log_Println((char *) F("deep-sleep, good night......."), LOGLEVEL_NOTICE);
-		esp_deep_sleep_start();
+		/* Log_Println((char *) F("deep-sleep, good night......."), LOGLEVEL_NOTICE);
+		esp_deep_sleep_start(); */
+		Log_Println((char *) F("Shut down, byebye......."), LOGLEVEL_NOTICE);
+		digitalWrite(POWER_HOLD_PIN, LOW);
 	}
 }
 

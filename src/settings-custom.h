@@ -25,6 +25,9 @@
             #define SPISD_MOSI              23          // GPIO for master out slave in (SD) => not necessary for single-SPI
             #define SPISD_MISO              19          // GPIO for master in slave ou (SD) => not necessary for single-SPI
             #define SPISD_SCK               18          // GPIO for clock-signal (SD) => not necessary for single-SPI
+        #else
+            extern SemaphoreHandle_t spiSemaphore;
+            extern bool rfidOn;
         #endif
     #endif
 
@@ -34,6 +37,9 @@
     #define RFID_MOSI                       26          // GPIO for master out slave in (RFID)
     #define RFID_MISO                       14          // GPIO for master in slave out (RFID)
     #define RFID_SCK                        25          // GPIO for clock-signal (RFID)
+    #ifdef SINGLE_SPI_ENABLE
+        #define RFID_PWR                        14          // Turn on and off RFID to allow shared SPI
+    #endif
 
     #ifdef RFID_READER_TYPE_PN5180
         #define RFID_BUSY                   16          // PN5180 BUSY PIN
@@ -57,12 +63,12 @@
     //#define GPIO_HP_EN                      113         // To enable amp for headphones (GPIO or port-channel)
 
     // Control-buttons (set to 99 to DISABLE; 0->39 for GPIO; 100->115 for port-expander)
-    #define NEXT_BUTTON                     35          // Button 0: GPIO to detect next
-    #define PREVIOUS_BUTTON                 34          // Button 1: GPIO to detect previous (Important: as of 19.11.2020 changed from 33 to 2; make sure to change in SD-MMC-mode)
-    #define PAUSEPLAY_BUTTON                39          // Button 2: GPIO to detect pause/play
-    #define ROTARYENCODER_BUTTON            36          // (set to 99 to disable; 0->39 for GPIO; 100->115 for port-expander)
-    #define BUTTON_4                        99          // Button 4: unnamed optional button
-    #define BUTTON_5                        99          // Button 5: unnamed optional button
+    #define NEXT_BUTTON                     39          // Button 0: GPIO to detect next
+    #define PREVIOUS_BUTTON                 36          // Button 1: GPIO to detect previous (Important: as of 19.11.2020 changed from 33 to 2; make sure to change in SD-MMC-mode)
+    #define PAUSEPLAY_BUTTON                99          // Button 2: GPIO to detect pause/play
+    #define ROTARYENCODER_BUTTON            99          // (set to 99 to disable; 0->39 for GPIO; 100->115 for port-expander)
+    #define BUTTON_4                        35          // Button 4: unnamed optional button
+    #define BUTTON_5                         0          // Button 5: unnamed optional button
 
     //#define BUTTONS_LED                   114         // Powers the LEDs of the buttons. Make sure the current consumed by the LEDs can be handled by the used GPIO
 
@@ -81,13 +87,15 @@
     // Wake-up button => this also is the interrupt-pin if port-expander is enabled!
     // Please note: only RTC-GPIOs (0, 4, 12, 13, 14, 15, 25, 26, 27, 32, 33, 34, 35, 36, 39, 99) can be used! Set to 99 to DISABLE.
     // Please note #2: this button can be used as interrupt-pin for port-expander. If so, all pins connected to port-expander can wake up ESPuino.
-    #define WAKEUP_BUTTON                   ROTARYENCODER_BUTTON // Defines the button that is used to wake up ESPuino from deepsleep.
+    #define WAKEUP_BUTTON                   NEXT_BUTTON // Defines the button that is used to wake up ESPuino from deepsleep.
 
     // (optional) Power-control
     #define POWER                           99          // GPIO used to drive transistor-circuit, that switches off peripheral devices while ESP32-deepsleep
     #ifdef POWER
         //#define INVERT_POWER                          // If enabled, use inverted logic for POWER circuit, that means peripherals are turned off by writing HIGH
     #endif
+
+    #define POWER_HOLD_PIN                   2          // This pin needs to be set HIGH to keep the esp powered
 
     // (optional) Neopixel
     #define LED_PIN                         99          // GPIO for Neopixel-signaling

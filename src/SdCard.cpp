@@ -14,6 +14,30 @@
 	fs::FS gFSystem = (fs::FS)SD;
 #endif
 
+bool SdCard_reInit(TickType_t t){
+    #ifdef SINGLE_SPI_ENABLE
+        if(!takeSpiSemaphore(t)){
+            // semaphore blocked
+			Log_Println((char *) FPSTR("SPI semaphore is locked!"), LOGLEVEL_DEBUG);
+            return false;
+        }
+		Log_Println((char *) FPSTR("Initializing SD"), LOGLEVEL_DEBUG);
+        SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI, SPISD_CS);
+        SPI.setFrequency(1000000);
+        while (!SD.begin(SPISD_CS)) {
+            Log_Println((char *) FPSTR(unableToMountSd), LOGLEVEL_ERROR);
+            delay(500);
+        #ifdef SHUTDOWN_IF_SD_BOOT_FAILS
+            if (millis() >= deepsleepTimeAfterBootFails * 1000) {
+                Log_Println((char *) FPSTR(sdBootFailedDeepsleep), LOGLEVEL_ERROR);
+                esp_deep_sleep_start();
+            }
+        #endif
+        }
+    #endif
+    return true;
+}
+
 void SdCard_Init(void) {
 	#ifndef SINGLE_SPI_ENABLE
 		#ifdef SD_MMC_1BIT_MODE
@@ -25,24 +49,37 @@ void SdCard_Init(void) {
 			spiSD.begin(SPISD_SCK, SPISD_MISO, SPISD_MOSI, SPISD_CS);
 			spiSD.setFrequency(1000000);
 			while (!SD.begin(SPISD_CS, spiSD)) {
+				Log_Println((char *) FPSTR(unableToMountSd), LOGLEVEL_ERROR);
+				delay(500);
+		#ifdef SHUTDOWN_IF_SD_BOOT_FAILS
+				if (millis() >= deepsleepTimeAfterBootFails * 1000) {
+					Log_Println((char *) FPSTR(sdBootFailedDeepsleep), LOGLEVEL_ERROR);
+					esp_deep_sleep_start();
+				}
+		#endif
+			}
 		#endif
 	#else
 		#ifdef SD_MMC_1BIT_MODE
 			pinMode(2, INPUT_PULLUP);
 			while (!SD_MMC.begin("/sdcard", true)) {
-		#else
-			while (!SD.begin(SPISD_CS)) {
-		#endif
-	#endif
 				Log_Println((char *) FPSTR(unableToMountSd), LOGLEVEL_ERROR);
 				delay(500);
-	#ifdef SHUTDOWN_IF_SD_BOOT_FAILS
+			#ifdef SHUTDOWN_IF_SD_BOOT_FAILS
 				if (millis() >= deepsleepTimeAfterBootFails * 1000) {
 					Log_Println((char *) FPSTR(sdBootFailedDeepsleep), LOGLEVEL_ERROR);
 					esp_deep_sleep_start();
 				}
-	#endif
+			#endif
 			}
+		#endif
+	#endif
+	
+	#ifdef SINGLE_SPI_ENABLE
+		if(SdCard_reInit(1000)){
+			giveSpiSemaphore();
+		}
+	#endif
 }
 
 void SdCard_Exit(void) {
@@ -58,8 +95,10 @@ sdcard_type_t SdCard_GetType(void) {
 		Log_Println((char *) FPSTR(sdMountedMmc1BitMode), LOGLEVEL_NOTICE);
 		cardType = SD_MMC.cardType();
 	#else
+		SdCard_reInit();
 		Log_Println((char *) FPSTR(sdMountedSpiMode), LOGLEVEL_NOTICE);
 		cardType = SD.cardType();
+		giveSpiSemaphore();
 	#endif
 		return cardType;
 }
@@ -68,7 +107,10 @@ uint64_t SdCard_GetSize() {
 	#ifdef SD_MMC_1BIT_MODE
 		return SD_MMC.cardSize();
 	#else
-		return SD.cardSize();
+		SdCard_reInit();
+		uint64_t cardSize = SD.cardSize();
+		giveSpiSemaphore();
+		return cardSize;
 	#endif
 }
 
@@ -76,12 +118,16 @@ uint64_t SdCard_GetFreeSize() {
 	#ifdef SD_MMC_1BIT_MODE
 		return SD_MMC.cardSize() - SD_MMC.usedBytes();
 	#else
-		return SD.cardSize() - SD.usedBytes();
+		SdCard_reInit();
+		uint64_t freeSize = SD.cardSize() - SD.usedBytes();
+		giveSpiSemaphore();
+		return freeSize;
 	#endif
 }
 
 void SdCard_PrintInfo() {
 	// show SD card type
+	SdCard_reInit();
 	sdcard_type_t cardType = SdCard_GetType();
 	Log_Print((char *) F("SD card type: "), LOGLEVEL_DEBUG, true );
 	if (cardType == CARD_MMC) {
@@ -95,7 +141,8 @@ void SdCard_PrintInfo() {
 	}
 	// show SD card size / free space
 	uint64_t cardSize = SdCard_GetSize() / (1024 * 1024);
-	uint64_t freeSize = SdCard_GetFreeSize() / (1024 * 1024);;
+	uint64_t freeSize = SdCard_GetFreeSize() / (1024 * 1024);
+	giveSpiSemaphore();
 	snprintf(Log_Buffer, Log_BufferLength, "%s: %llu MB / %llu MB", (char *) FPSTR(sdInfo), cardSize, freeSize);
 	Log_Println(Log_Buffer, LOGLEVEL_NOTICE);
 }
@@ -142,9 +189,11 @@ char *SdCard_pickRandomSubdirectory(char *_directory) {
 	}
 
 	// Create linear list of subdirectories with #-delimiters
+	SdCard_reInit();
 	while (true) {
 		File fileItem = directory.openNextFile();
 		if (!fileItem) {
+			giveSpiSemaphore();
 			break;
 		}
 		if (!fileItem.isDirectory()) {
@@ -220,6 +269,7 @@ char **SdCard_ReturnPlaylist(const char *fileName, const uint32_t _playMode) {
 	bool enablePlaylistFromM3u = false;
 
 	// Look if file/folder requested really exists. If not => break.
+	SdCard_reInit();
 	File fileOrDirectory = gFSystem.open(fileName);
 	if (!fileOrDirectory) {
 		Log_Println((char *) FPSTR(dirOrFileDoesNotExist), LOGLEVEL_ERROR);
@@ -326,6 +376,7 @@ char **SdCard_ReturnPlaylist(const char *fileName, const uint32_t _playMode) {
 				serializedPlaylist[fPos-1] = '\0';
 			}
 		} else {
+			giveSpiSemaphore();
 			return files;
 		}
 	}
@@ -352,7 +403,8 @@ char **SdCard_ReturnPlaylist(const char *fileName, const uint32_t _playMode) {
 				files[1] = x_strdup(fileNameBuf);
 			}
 			files[0] = x_strdup("1"); // Number of files is always 1 in file-mode
-
+			
+			giveSpiSemaphore();
 			return ++files;
 		}
 
@@ -410,6 +462,8 @@ char **SdCard_ReturnPlaylist(const char *fileName, const uint32_t _playMode) {
 			cacheFile.close();
 		}
 	}
+
+	giveSpiSemaphore();
 
 	// Get number of elements out of serialized playlist
 	uint32_t cnt = 0;
